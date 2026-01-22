@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Express - Rider Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #8e44ad;
+            --primary-dark: #732d91;
+            --secondary: #0066cc;
+            --accent: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+            --light-gray: #ecf0f1;
+            --border-radius: 12px;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f0fa 0%, #e8dff5 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        /* Header Styles */
+        .main-header {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: var(--dark);
+        }
+        
+        .logo-icon {
+            font-size: 32px;
+            color: var(--primary);
+        }
+        
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .logo-text span {
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 15px;
+            transition: var(--transition);
+            position: relative;
+            padding: 8px 0;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 15px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
+        }
+        
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+        
+        /* Hero Section - Rider Focused */
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 40px;
+        }
+        
+        .hero-content h2 {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .hero-content h2 span {
+            color: var(--primary);
+        }
+        
+        .hero-content p {
+            font-size: 18px;
+            color: var(--gray);
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--accent), #27ae60);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .hero-features {
+            margin-top: 40px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .feature-text h4 {
+            font-size: 18px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .feature-text p {
+            font-size: 14px;
+            color: var(--gray);
+            margin: 0;
+        }
+        
+        /* Login Section */
+        .login-section {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .login-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 28px;
+            color: var(--dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        .section-subtitle {
+            color: var(--gray);
+            font-size: 16px;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 16px 18px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: var(--transition);
+            background-color: #fcfcfc;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.2);
+            background-color: white;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 45px;
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        .remember-me input {
+            width: auto;
+        }
+        
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .forgot-password:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
+        }
+        
+        /* Registration Link */
+        .register-link {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+            color: var(--gray);
+            font-size: 15px;
+        }
+        
+        .register-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Thymeleaf Validation Styles */
+        .field-error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        
+        .validation-error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        
+        .error {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2) !important;
+        }
+        
+        /* Alert Messages */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.5s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert i {
+            font-size: 20px;
+        }
+        
+        /* Footer */
+        .main-footer {
+            width: 100%;
+            max-width: 1200px;
+            margin: 60px auto 0;
+            text-align: center;
+            color: var(--gray);
+            font-size: 14px;
+            padding: 30px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-header {
+                padding: 15px 20px;
+                margin-bottom: 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero-section {
+                padding-right: 0;
+                text-align: center;
+            }
+            
+            .hero-content h2 {
+                font-size: 28px;
+            }
+            
+            .hero-content p {
+                font-size: 16px;
+            }
+            
+            .login-section {
+                padding: 30px 25px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .feature-item {
+                text-align: left;
+            }
+            
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 16px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        /* Demo Credentials Box */
+        .demo-credentials {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .demo-credentials h4 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .demo-credentials h4 i {
+            color: var(--warning);
+        }
+        
+        .credential-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .credential-item strong {
+            color: var(--dark);
+            display: inline-block;
+            min-width: 100px;
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Logging you in...</div>
+    </div>
+    
+    <!-- Header -->
+    <header class="main-header">
+        <a href="/" class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-motorcycle"></i>
+            </div>
+            <div class="logo-text">
+                <h1>FuelExpress Rider</h1>
+                <span>Delivery Partner Portal</span>
+            </div>
+        </a>
+        
+        <nav class="nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/services">Services</a>
+            <a href="/contact">Contact</a>
+            <a href="/riderregister" class="btn-register">
+                <i class="fas fa-user-plus"></i> Apply as Rider
+            </a>
+        </nav>
+        
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-bolt"></i> Earn up to ₹40,000/month
+                </div>
+                <h2>Welcome <span>Delivery Partner</span></h2>
+                <p>Login to access your rider dashboard, manage deliveries, track earnings, and connect with our support team.</p>
+                
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>Weekly Payments</h4>
+                            <p>Get paid every week directly to your bank account</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>Track Performance</h4>
+                            <p>Monitor your delivery stats and earnings in real-time</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>24/7 Support</h4>
+                            <p>Dedicated support team for all your queries</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-gas-pump"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h4>Fuel Allowance</h4>
+                            <p>Monthly fuel support for active riders</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Login Section -->
+        <div class="login-section">
+            <!-- Alert Messages (Thymeleaf) -->
+            <div th:if="${param.success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <div>Registration successful! Please login with your credentials.</div>
+            </div>
+            
+            <div th:if="${param.error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <div th:text="${session.SPRING_SECURITY_LAST_EXCEPTION?.message} ?: 'Invalid username or password'">Invalid username or password</div>
+            </div>
+            
+            <div th:if="${param.logout}" class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <div>You have been logged out successfully.</div>
+            </div>
+            
+            <div th:if="${param.reset}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <div>Password reset successful! Please login with your new password.</div>
+            </div>
+            
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-motorcycle"></i> Rider Login
+                </h2>
+                <p class="section-subtitle">Enter your credentials to access the rider dashboard</p>
+            </div>
+            
+            <!-- Rider Login Form -->
+            <form id="riderLoginForm" th:action="@{/login-rider}" method="post">
+                <div class="form-group">
+                    <label for="riderEmail">Email or Phone Number</label>
+                    <input type="text" id="riderEmail" name="username" th:value="${param.username}" placeholder="Enter your email or phone" required>
+                    <div class="validation-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="riderPassword">Password</label>
+                    <input type="password" id="riderPassword" name="password" placeholder="Enter your password" required>
+                    <button type="button" class="password-toggle" id="toggleRiderPassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <div class="validation-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember-me" id="riderRemember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="/rider/forgot-password" class="forgot-password">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+                </button>
+            </form>
+            
+            <!-- Registration Link -->
+            <div class="register-link">
+                Not a delivery partner yet? <a href="/riderregister">Apply now to join our team</a>
+            </div>
+            
+            <!-- Demo Credentials -->
+            <div class="demo-credentials">
+                <h4><i class="fas fa-lightbulb"></i> Demo Credentials</h4>
+                <div class="credential-item"><strong>Email:</strong> rider@fulexpress.com</div>
+                <div class="credential-item"><strong>Phone:</strong> 9876543211</div>
+                <div class="credential-item"><strong>Password:</strong> rider123</div>
+                <div style="font-size: 12px; color: var(--gray); margin-top: 5px;">Use these credentials to test the login</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-links">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+            <a href="/faq">FAQ</a>
+            <a href="/contact">Contact Us</a>
+            <a href="/support">Support Center</a>
+        </div>
+        <p>&copy; 2023 FuelExpress Rider. All rights reserved. | Rider Support: 1800-123-4567</p>
+        <p style="margin-top: 10px; font-size: 12px; color: #95a5a6;">Delivery Partner Portal v2.1.0</p>
+    </footer>
+
+    <script>
+        // Toggle password visibility
+        const toggleRiderPassword = document.getElementById('toggleRiderPassword');
+        const riderPassword = document.getElementById('riderPassword');
+        
+        toggleRiderPassword.addEventListener('click', () => {
+            const type = riderPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            riderPassword.setAttribute('type', type);
+            toggleRiderPassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+        
+        // Form validation
+        const riderLoginForm = document.getElementById('riderLoginForm');
+        
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phoneRegex = /^[0-9]{10}$/;
+            return emailRegex.test(email) || phoneRegex.test(email);
+        }
+        
+        function showError(inputId, message) {
+            const inputElement = document.getElementById(inputId);
+            const errorElement = document.getElementById(inputId + 'Error');
+            
+            if (inputElement) {
+                inputElement.classList.add('error');
+            }
+            
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+        
+        function clearError(inputId) {
+            const inputElement = document.getElementById(inputId);
+            const errorElement = document.getElementById(inputId + 'Error');
+            
+            if (inputElement) {
+                inputElement.classList.remove('error');
+            }
+            
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.style.display = 'none';
+            }
+        }
+        
+        riderLoginForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            const riderEmail = document.getElementById('riderEmail').value.trim();
+            const riderPassword = document.getElementById('riderPassword').value.trim();
+            
+            // Clear previous errors
+            clearError('riderEmail');
+            clearError('riderPassword');
+            
+            // Validate email/phone
+            if (!riderEmail) {
+                showError('riderEmail', 'Please enter your email or phone number');
+                isValid = false;
+            } else if (!validateEmail(riderEmail)) {
+                showError('riderEmail', 'Please enter a valid email or 10-digit phone number');
+                isValid = false;
+            }
+            
+            // Validate password
+            if (!riderPassword) {
+                showError('riderPassword', 'Please enter your password');
+                isValid = false;
+            } else if (riderPassword.length < 6) {
+                showError('riderPassword', 'Password must be at least 6 characters');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = document.querySelector('.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Show loading animation
+                showLoading();
+            }
+        });
+        
+        // Show loading animation
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+        }
+        
+        // Hide loading animation (called when page loads)
+        window.addEventListener('load', () => {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'none';
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.querySelector('.nav-links');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+            if (navLinks.style.display === 'flex') {
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '80px';
+                navLinks.style.left = '0';
+                navLinks.style.right = '0';
+                navLinks.style.background = 'white';
+                navLinks.style.padding = '20px';
+                navLinks.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+                navLinks.style.zIndex = '100';
+                navLinks.style.borderRadius = '0 0 12px 12px';
+            }
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                if (!navLinks.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    navLinks.style.display = 'none';
+                }
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'row';
+                navLinks.style.position = 'static';
+                navLinks.style.background = 'transparent';
+                navLinks.style.padding = '0';
+                navLinks.style.boxShadow = 'none';
+                navLinks.style.borderRadius = '0';
+            }
+        });
+        
+        // Auto-fill demo credentials for testing
+        function fillDemoCredentials() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const demo = urlParams.get('demo');
+            
+            if (demo === 'rider') {
+                document.getElementById('riderEmail').value = 'rider@fulexpress.com';
+                document.getElementById('riderPassword').value = 'rider123';
+                showNotification('Demo rider credentials loaded', 'success');
+            }
+        }
+        
+        // Show notification function
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ecc71' : '#e74c3c'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 500;
+            `;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add CSS for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Check URL for demo parameter
+        window.addEventListener('load', fillDemoCredentials);
+        
+        // Auto-focus on email field
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInput = document.getElementById('riderEmail');
+            if (emailInput) {
+                emailInput.focus();
+            }
+        });
+        
+        // Enter key to submit form
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                riderLoginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // Remember me functionality (simplified)
+        window.addEventListener('load', () => {
+            const savedEmail = localStorage.getItem('fuelExpress_rider_email');
+            const savedRemember = localStorage.getItem('fuelExpress_rider_remember');
+            
+            if (savedEmail && savedRemember === 'true') {
+                document.getElementById('riderEmail').value = savedEmail;
+                document.getElementById('riderRemember').checked = true;
+            }
+        });
+        
+        // Save email when remember me is checked
+        const rememberCheckbox = document.getElementById('riderRemember');
+        if (rememberCheckbox) {
+            rememberCheckbox.addEventListener('change', (e) => {
+                const email = document.getElementById('riderEmail').value;
+                if (e.target.checked && email) {
+                    localStorage.setItem('fuelExpress_rider_email', email);
+                    localStorage.setItem('fuelExpress_rider_remember', 'true');
+                } else {
+                    localStorage.removeItem('fuelExpress_rider_email');
+                    localStorage.removeItem('fuelExpress_rider_remember');
+                }
+            });
+        }
+        
+        // Add some interactive effects
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
