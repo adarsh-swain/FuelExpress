@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuelFlow | Rider Dashboard</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        :root {
+            --primary: #0066ff;
+            --primary-light: #4d94ff;
+            --primary-dark: #0052cc;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --white: #ffffff;
+            --sidebar-width: 280px;
+            --header-height: 80px;
+            --topnav-height: 70px;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
+            --gradient-warning: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f6f9ff 0%, #f0f5ff 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+            padding-top: var(--topnav-height);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--topnav-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 992px) {
+            .top-nav {
+                left: 0;
+            }
+        }
+
+        .nav-left,
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .welcome-text h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .welcome-text p {
+            font-size: 13px;
+            color: var(--gray);
+            margin: 0;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            background: var(--light);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+            background: white;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 16px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-light);
+            background: white;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-btn i {
+            font-size: 16px;
+        }
+
+        .quick-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-badge-nav {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-badge-nav i {
+            font-size: 14px;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            border-radius: var(--radius-md);
+            background: rgba(0, 102, 255, 0.1);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-btn:hover {
+            background: rgba(0, 102, 255, 0.2);
+        }
+
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .user-info-small h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-info-small p {
+            font-size: 12px;
+            color: var(--gray);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+            display: none;
+            z-index: 1001;
+            border: 1px solid var(--gray-light);
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+            padding-left: 25px;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: calc(100vh - var(--topnav-height));
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            box-shadow: var(--shadow);
+            padding: 30px 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 25px 30px;
+            border-bottom: 1px solid var(--gray-light);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--dark);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .sidebar-menu {
+            padding: 0 20px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            border-radius: var(--radius-md);
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item:hover {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+
+        .menu-item i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 0;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: height 0.3s ease;
+        }
+
+        .menu-item:hover::after {
+            height: 60%;
+        }
+
+        .menu-item.active::after {
+            height: 60%;
+            background: white;
+        }
+
+        .user-profile {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            padding: 20px 25px;
+            border-top: 1px solid var(--gray-light);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            border: 3px solid white;
+            box-shadow: var(--shadow);
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .header-title h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header-title p {
+            color: var(--gray);
+            font-size: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: white;
+            border: 1px solid var(--gray-light);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 18px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .notification-btn:hover {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--gray-light);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-light);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            background: var(--gradient-primary);
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .stat-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: var(--gray);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .stat-desc {
+            font-size: 14px;
+            color: var(--gray);
+            opacity: 0.8;
+        }
+
+        /* Orders Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 30px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-refresh {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-refresh:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-refresh i {
+            font-size: 16px;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--dark);
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            border-top: none;
+            padding: 20px 25px;
+            border-bottom: 2px solid var(--gray-light);
+            background: linear-gradient(135deg, #f8faff 0%, #f0f5ff 100%);
+        }
+
+        .table td {
+            padding: 20px 25px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--gray-light);
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.05) 0%, rgba(0, 102, 255, 0.02) 100%);
+            transform: translateX(5px);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .table tbody tr:hover td {
+            border-color: var(--primary-light);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.2) 100%);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-accepted {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 102, 255, 0.2) 100%);
+            color: var(--primary);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+        }
+
+        .status-delivered {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-cancelled {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 80px;
+            justify-content: center;
+        }
+
+        .btn-view {
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .btn-view:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-accept-order {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .btn-accept-order:hover {
+            background: var(--success);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-deliver {
+            background: rgba(124, 58, 237, 0.1);
+            color: var(--secondary);
+        }
+
+        .btn-deliver:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            cursor: default;
+        }
+
+        /* Fuel Type Badge */
+        .fuel-type-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+        }
+
+        /* Dropdown */
+        .dropdown-toggle {
+            background: white;
+            border: 1px solid var(--gray-light);
+            color: var(--dark);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-toggle:hover {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 102, 255, 0.05) 100%);
+            border-color: var(--primary-light);
+        }
+
+        .dropdown-menu {
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 10px 0;
+        }
+
+        .dropdown-item {
+            padding: 10px 20px;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 102, 255, 0.2) 100%);
+            color: var(--primary);
+            padding-left: 25px;
+        }
+
+        .dropdown-divider {
+            margin: 5px 0;
+            border-color: var(--gray-light);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 2px dashed var(--gray-light);
+            box-shadow: var(--shadow);
+            margin: 30px 0;
+        }
+
+        .empty-state i {
+            font-size: 72px;
+            margin-bottom: 30px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.7;
+        }
+
+        .empty-state h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: var(--gray);
+            font-size: 16px;
+            max-width: 500px;
+            margin: 0 auto 35px;
+            line-height: 1.8;
+        }
+
+        /* Alerts */
+        .alerts-container {
+            margin-bottom: 30px;
+        }
+
+        .alert {
+            padding: 20px 25px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            color: #065f46;
+            border-left: 5px solid var(--success);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            color: #991b1b;
+            border-left: 5px solid var(--danger);
+        }
+
+        .alert i {
+            font-size: 22px;
+        }
+
+        .alert p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Badge */
+        .badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-primary {
+            background: rgba(0, 102, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 30px;
+        }
+
+        .page-link {
+            border: none;
+            color: var(--dark);
+            padding: 12px 20px;
+            margin: 0 5px;
+            border-radius: var(--radius-md) !important;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .page-link:hover {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 102, 255, 0.2) 100%);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .page-item.active .page-link {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--gray-light);
+            background: transparent;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .search-container {
+                width: 250px;
+            }
+
+            .welcome-text h2 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .top-nav {
+                left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-center {
+                display: none;
+            }
+
+            .quick-stats {
+                display: none;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 1000px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .section-title::before {
+                left: 50%;
+                transform: translateX(-50%) translateY(-50%);
+            }
+
+            .top-nav {
+                padding: 0 15px;
+            }
+
+            .nav-btn span {
+                display: none;
+            }
+
+            .nav-btn {
+                padding: 10px;
+                min-width: 40px;
+                justify-content: center;
+            }
+
+            .user-btn {
+                padding: 8px;
+            }
+
+            .user-info-small {
+                display: none;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .btn-action {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-refresh,
+            .btn-accept {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stat-card {
+                padding: 25px;
+            }
+
+            .top-nav {
+                padding: 0 10px;
+            }
+
+            .table th,
+            .table td {
+                padding: 15px 20px;
+            }
+        }
+
+        /* Menu Toggle Button (for mobile) */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Overlay for mobile menu */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+
+    <script>
+        // Global variables
+        let userDropdownOpen = false;
+        let isRefreshing = false;
+        let locationDetected = false;
+
+        function toggleUserDropdown() {
+            userDropdownOpen = !userDropdownOpen;
+            $('#userDropdown').toggleClass('show');
+        }
+
+        function closeUserDropdown() {
+            userDropdownOpen = false;
+            $('#userDropdown').removeClass('show');
+        }
+
+        function toggleSidebar() {
+            $('.sidebar').toggleClass('active');
+            $('.sidebar-overlay').toggleClass('active');
+        }
+
+        function closeSidebar() {
+            $('.sidebar').removeClass('active');
+            $('.sidebar-overlay').removeClass('active');
+        }
+
+        function showAlert(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+            const alertHtml = `
+                <div class="alert ${alertClass}">
+                    <i class="fas ${icon}"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+
+            $('#alertsContainer').prepend(alertHtml);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                $('.alert').first().remove();
+            }, 5000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function formatTime(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getStatusClass(status) {
+            if (!status) return 'status-pending';
+            switch (status.toLowerCase()) {
+                case 'pending': return 'status-pending';
+                case 'accepted': return 'status-accepted';
+                case 'delivered': return 'status-delivered';
+                case 'cancelled': return 'status-cancelled';
+                default: return 'status-pending';
+            }
+        }
+
+        function getStatusText(status) {
+            if (!status) return 'Pending';
+            switch (status.toLowerCase()) {
+                case 'pending': return 'Pending';
+                case 'accepted': return 'Accepted';
+                case 'delivered': return 'Delivered';
+                case 'cancelled': return 'Cancelled';
+                default: return status;
+            }
+        }
+
+        function getStatusIcon(status) {
+            if (!status) return 'fa-clock';
+            switch (status.toLowerCase()) {
+                case 'pending': return 'fa-clock';
+                case 'accepted': return 'fa-check-circle';
+                case 'delivered': return 'fa-truck';
+                case 'cancelled': return 'fa-times-circle';
+                default: return 'fa-clock';
+            }
+        }
+
+        function acceptOrder(orderId) {
+            if (confirm(`Are you sure you want to accept order #${orderId}?`)) {
+                // Submit form to update order status
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/rider/orders/accept';
+                
+                const orderIdInput = document.createElement('input');
+                orderIdInput.type = 'hidden';
+                orderIdInput.name = 'orderId';
+                orderIdInput.value = orderId;
+                
+                form.appendChild(orderIdInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function deliverOrder(orderId) {
+            if (confirm(`Mark order #${orderId} as delivered?`)) {
+                // Submit form to update order status
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/rider/orders/deliver';
+                
+                const orderIdInput = document.createElement('input');
+                orderIdInput.type = 'hidden';
+                orderIdInput.name = 'orderId';
+                orderIdInput.value = orderId;
+                
+                form.appendChild(orderIdInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function viewOrderDetails(orderId) {
+            // Redirect to order details page
+            window.location.href = `/rider/orders/${orderId}`;
+        }
+
+        // Filter table rows
+        function filterTable(status) {
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.id === 'loadingRow') return;
+                
+                const statusBadge = row.querySelector('.status-badge');
+                const rowStatus = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
+                
+                if (status === 'all' || rowStatus === status) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update filter button text
+            const filterText = status === 'all' ? 'All Orders' : 
+                              status.charAt(0).toUpperCase() + status.slice(1);
+            document.getElementById('filterDropdown').innerHTML = 
+                `<i class="fas fa-filter"></i> ${filterText}`;
+            
+            // Show/hide empty state
+            const emptyState = document.getElementById('emptyState');
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // Search functionality
+        function searchOrders() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTable tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.id === 'loadingRow') return;
+                
+                const rowText = row.textContent.toLowerCase();
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide empty state
+            const emptyState = document.getElementById('emptyState');
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        $(document).ready(function () {
+            // Initialize event listeners
+            $('.menu-toggle').on('click', toggleSidebar);
+            $('.sidebar-overlay').on('click', closeSidebar);
+            $('#userBtn').on('click', toggleUserDropdown);
+            
+            // Close dropdown when clicking outside
+            $(document).on('click', function (event) {
+                if (!$(event.target).closest('.user-menu').length) {
+                    closeUserDropdown();
+                }
+            });
+            
+            // Search functionality
+            $('#searchInput').on('keyup', searchOrders);
+            
+            // Filter functionality
+            $('.filter-option').on('click', function(e) {
+                e.preventDefault();
+                const filter = $(this).data('filter');
+                filterTable(filter);
+                $('.filter-option').removeClass('active');
+                $(this).addClass('active');
+            });
+            
+            // Refresh button
+            $('#refreshBtn, #refreshBtnTop, #refreshTableBtn').on('click', function() {
+                window.location.reload();
+            });
+            
+            // Check for new orders button
+            $('#checkNewOrdersBtn').on('click', function() {
+                window.location.reload();
+            });
+            
+            // Add hover effects
+            $('.stat-card, .table tbody tr').hover(
+                function() {
+                    $(this).addClass('animate__animated animate__pulse');
+                },
+                function() {
+                    $(this).removeClass('animate__animated animate__pulse');
+                }
+            );
+            
+            // Add click animation to buttons
+            $('.btn-refresh, .notification-btn, .nav-btn').on('click', function() {
+                $(this).addClass('animate__animated animate__bounce');
+                setTimeout(() => {
+                    $(this).removeClass('animate__animated animate__bounce');
+                }, 1000);
+            });
+            
+            // Show alert if there are any messages
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (successMessage && successMessage.value) {
+                showAlert(successMessage.value, 'success');
+            }
+            
+            if (errorMessage && errorMessage.value) {
+                showAlert(errorMessage.value, 'danger');
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Hidden inputs for messages -->
+    <input type="hidden" id="successMessage" th:value="${successMessage}">
+    <input type="hidden" id="errorMessage" th:value="${errorMessage}">
+
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="welcome-text">
+                <h2>Welcome back, Rider!</h2>
+                <p>Ready to deliver fuel efficiently today</p>
+            </div>
+        </div>
+
+        <div class="nav-center">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search orders...">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="quick-stats">
+                <span class="stat-badge-nav">
+                    <i class="fas fa-bolt"></i>
+                    <span id="navOrderCount" th:text="${orders != null ? orders.size() : 0}">0</span> Orders
+                </span>
+                <span class="stat-badge-nav">
+                    <i class="fas fa-route"></i>
+                    <span id="navTotalDistance">0</span> km
+                </span>
+            </div>
+
+            <button class="nav-btn" id="refreshBtnTop">
+                <i class="fas fa-sync-alt"></i>
+                <span>Refresh</span>
+            </button>
+
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+
+            <div class="user-menu">
+                <button class="user-btn" id="userBtn">
+                    <div class="user-avatar-small">R</div>
+                    <div class="user-info-small">
+                        <h4>Rider</h4>
+                        <p><span class="status-dot"></span> Online</p>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="dropdown-menu" id="userDropdown">
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user"></i>
+                        My Profile
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-chart-line"></i>
+                        Earnings
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-question-circle"></i>
+                        Help & Support
+                    </a>
+                    <hr style="margin: 5px 0; border-color: var(--gray-light);">
+                    <a href="/logout" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-gas-pump"></i>
+                    </div>
+                    <span>FuelFlow</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-list"></i>
+                    <span>My Orders</span>
+                    <span class="badge badge-primary" id="ordersBadge" 
+                          th:text="${orders != null ? orders.size() : 0}" 
+                          style="margin-left: auto;">0</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Live Tracking</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Earnings</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help & Support</span>
+                </a>
+            </nav>
+
+            <div class="user-profile">
+                <div class="user-avatar">R</div>
+                <div class="user-info">
+                    <h4>Rider Dashboard</h4>
+                    <p>
+                        <span class="user-status"></span>
+                        Online
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Alerts Container -->
+            <div class="alerts-container" id="alertsContainer"></div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-gas-pump"></i>
+                        </div>
+                        <span class="stat-badge">Total Orders</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalOrders" th:text="${orders != null ? orders.size() : 0}">0</div>
+                        <div class="stat-label">Orders Assigned</div>
+                        <div class="stat-desc">All orders assigned to you</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <span class="stat-badge">Pending</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="pendingOrders">
+                            <span th:text="${orders != null ? 
+                                #lists.size(#lists.select(orders, 'o.status == \'pending\'')) : 0}">0</span>
+                        </div>
+                        <div class="stat-label">Awaiting Action</div>
+                        <div class="stat-desc">Orders to be processed</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <span class="stat-badge">Completed</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="completedOrders">
+                            <span th:text="${orders != null ? 
+                                #lists.size(#lists.select(orders, 'o.status == \'delivered\'')) : 0}">0</span>
+                        </div>
+                        <div class="stat-label">Delivered Successfully</div>
+                        <div class="stat-desc">Orders completed this month</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <span class="stat-badge">Earnings</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalEarnings">
+                            ₹<span th:text="${orders != null ? 
+                                #numbers.formatDecimal(
+                                    #aggregates.sum(#lists.select(orders, 'o.status == \'delivered\'').![deliveryCharge]), 
+                                    0, 2
+                                ) : '0'}">0</span>
+                        </div>
+                        <div class="stat-label">This Month</div>
+                        <div class="stat-desc">Total earnings from deliveries</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table Section -->
+            <div class="section-header">
+                <h2 class="section-title">My Orders</h2>
+                <div class="section-actions">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="filterDropdown" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                            <li><a class="dropdown-item filter-option active" href="#" data-filter="all">All Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item filter-option" href="#" data-filter="pending">Pending</a></li>
+                            <li><a class="dropdown-item filter-option" href="#" data-filter="accepted">Accepted</a></li>
+                            <li><a class="dropdown-item filter-option" href="#" data-filter="delivered">Delivered</a></li>
+                            <li><a class="dropdown-item filter-option" href="#" data-filter="cancelled">Cancelled</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn-refresh" id="refreshTableBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                <i class="fas fa-hashtag me-2"></i>Order ID
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-user me-2"></i>Customer
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-gas-pump me-2"></i>Fuel Details
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-map-marker-alt me-2"></i>Delivery Address
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-calendar me-2"></i>Date & Time
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-money-bill-wave me-2"></i>Amount
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-tag me-2"></i>Status
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-cogs me-2"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr th:if="${orders == null or #lists.isEmpty(orders)}" id="loadingRow">
+                            <td colspan="8" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Loading orders...</p>
+                            </td>
+                        </tr>
+                        
+                        <tr th:each="order : ${orders}" th:object="${order}">
+                            <td>
+                                <strong th:text="'#' + *{bookingId}">#1001</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>Customer ID: <span th:text="*{customerId}">501</span></strong>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-car me-1"></i>
+                                        <span th:text="*{vehicleNumber}">MH12AB1234</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="fuel-type-badge">
+                                        <i class="fas fa-gas-pump"></i>
+                                        <span th:text="*{fuelType}">Petrol</span>
+                                    </span>
+                                    <div class="mt-2">
+                                        <strong th:text="*{quantity} + ' L'">15.5 L</strong>
+                                        <div class="text-muted small" th:text="*{pumpName}">PetroMax Station</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="max-width: 200px;">
+                                <div class="text-truncate" th:title="*{deliveryAddress}" 
+                                     th:text="*{deliveryAddress}">
+                                    123 Main St, Mumbai
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    <i class="far fa-clock me-1"></i>
+                                    <span th:text="*{deliveryTimeSlot}">3:00 PM - 4:00 PM</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:text="${#dates.format(#dates.create(*{orderDate}), 'dd MMM yyyy')}">15 Jan 2024</div>
+                                <div class="text-muted small" 
+                                     th:text="${#dates.format(#dates.create(*{orderDate}), 'hh:mm a')}">02:30 PM</div>
+                            </td>
+                            <td>
+                                <strong>₹<span th:text="${#numbers.formatDecimal(*{totalAmount}, 0, 2)}">1850.75</span></strong>
+                                <div class="text-muted small">
+                                    Paid: <span th:text="*{paymentMethod}">Online</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge" th:classappend="*{status} ? 'status-' + *{status} : 'status-pending'">
+                                    <i class="fas" th:classappend="*{status} ? getStatusIcon(*{status}) : 'fa-clock'"></i>
+                                    <span th:text="*{status} ? getStatusText(*{status}) : 'Pending'">Pending</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-view" 
+                                            th:onclick="'viewOrderDetails(' + *{bookingId} + ')'">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    
+                                    <button th:if="*{status == 'pending'}" 
+                                            class="btn-action btn-accept-order" 
+                                            th:onclick="'acceptOrder(' + *{bookingId} + ')'">
+                                        <i class="fas fa-check"></i> Accept
+                                    </button>
+                                    
+                                    <button th:if="*{status == 'accepted'}" 
+                                            class="btn-action btn-deliver" 
+                                            th:onclick="'deliverOrder(' + *{bookingId} + ')'">
+                                        <i class="fas fa-truck"></i> Deliver
+                                    </button>
+                                    
+                                    <button th:if="*{status == 'delivered'}" 
+                                            class="btn-action btn-completed" disabled>
+                                        <i class="fas fa-check-circle"></i> Completed
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State (shown when no orders) -->
+            <div class="empty-state" id="emptyState" 
+                 th:if="${orders != null and #lists.isEmpty(orders)}" 
+                 style="display: none;">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>No Orders Found</h3>
+                <p>You don't have any orders assigned to you yet. New orders will appear here when assigned.</p>
+                <button class="btn-refresh" id="checkNewOrdersBtn">
+                    <i class="fas fa-redo"></i>
+                    Check for New Orders
+                </button>
+            </div>
+
+            <!-- Pagination (optional) -->
+            <nav aria-label="Page navigation" class="mt-4" id="paginationContainer" 
+                 th:if="${orders != null and not #lists.isEmpty(orders)}" style="display: none;">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </main>
+    </div>
+</body>
+
+</html>

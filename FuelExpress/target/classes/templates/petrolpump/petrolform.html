@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Fuel Express - Register Petrol Pump</title>
+	<!-- Leaflet CSS for maps -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<!-- *** CHANGE 1: Load Google Maps API (REQUIRES YOUR API KEY) *** -->
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyIruC1n1datcCsvGT7syLkTOO8E_n5zA"></script>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+		:root {
+			--primary: #2c3e50;
+			--secondary: #3498db;
+			--accent: #2ecc71;
+			--danger: #e74c3c;
+			--warning: #f39c12;
+			--light: #f8f9fa;
+			--dark: #343a40;
+			--sidebar-width: 250px;
+			--topbar-height: 70px;
+			--border-radius: 8px;
+		}
+
+		body {
+			background-color: #f5f7fa;
+			color: #333;
+			line-height: 1.6;
+			overflow-x: hidden;
+		}
+
+		.dashboard-container {
+			display: flex;
+			min-height: 100vh;
+			position: relative;
+		}
+
+		/* Sidebar Styles */
+		.sidebar {
+			width: var(--sidebar-width);
+			background-color: var(--primary);
+			color: white;
+			position: fixed;
+			height: 100vh;
+			padding-top: var(--topbar-height);
+			transition: all 0.3s ease;
+			z-index: 100;
+			box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+			left: 0;
+			transform: translateX(0);
+		}
+
+		.sidebar.collapsed {
+			transform: translateX(-100%);
+		}
+
+		.sidebar-header {
+			padding: 20px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			text-align: center;
+		}
+
+		.sidebar-header h3 {
+			font-size: 18px;
+			font-weight: 600;
+			color: #ecf0f1;
+		}
+
+		.sidebar-menu {
+			list-style: none;
+			padding: 20px 0;
+		}
+
+		.sidebar-menu li {
+			margin-bottom: 5px;
+		}
+
+		.sidebar-menu a {
+			display: flex;
+			align-items: center;
+			padding: 15px 20px;
+			color: #bdc3c7;
+			text-decoration: none;
+			transition: all 0.3s;
+			border-left: 4px solid transparent;
+		}
+
+		.sidebar-menu a:hover {
+			background-color: rgba(255, 255, 255, 0.05);
+			color: white;
+			border-left-color: var(--secondary);
+		}
+
+		.sidebar-menu a.active {
+			background-color: rgba(52, 152, 219, 0.1);
+			color: white;
+			border-left-color: var(--secondary);
+		}
+
+		.sidebar-menu i {
+			width: 30px;
+			font-size: 18px;
+		}
+
+		.sidebar-footer {
+			position: absolute;
+			bottom: 0;
+			width: 100%;
+			padding: 20px;
+			border-top: 1px solid rgba(255, 255, 255, 0.1);
+			text-align: center;
+			font-size: 14px;
+			color: #95a5a6;
+		}
+
+		/* Topbar Styles */
+		.topbar {
+			height: var(--topbar-height);
+			background-color: white;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 101;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 20px;
+		}
+
+		.toggle-sidebar {
+			background: none;
+			border: none;
+			font-size: 20px;
+			color: var(--primary);
+			cursor: pointer;
+			padding: 10px;
+			border-radius: 50%;
+			transition: background-color 0.3s;
+			display: none;
+		}
+
+		.toggle-sidebar:hover {
+			background-color: #f1f1f1;
+		}
+
+		.logo {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.logo h1 {
+			font-size: 24px;
+			font-weight: 700;
+			color: var(--primary);
+		}
+
+		.logo-icon {
+			font-size: 28px;
+			color: var(--secondary);
+		}
+
+		.user-info {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.user-avatar {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, var(--secondary), var(--primary));
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-weight: bold;
+			cursor: pointer;
+			transition: transform 0.3s;
+		}
+
+		.user-avatar:hover {
+			transform: scale(1.05);
+		}
+
+		.notifications {
+			position: relative;
+			cursor: pointer;
+		}
+
+		.notification-count {
+			position: absolute;
+			top: -5px;
+			right: -5px;
+			background-color: var(--danger);
+			color: white;
+			font-size: 12px;
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			animation: pulse 2s infinite;
+		}
+
+		@keyframes pulse {
+			0% {
+				transform: scale(1);
+			}
+
+			50% {
+				transform: scale(1.1);
+			}
+
+			100% {
+				transform: scale(1);
+			}
+		}
+
+		/* Main Content Styles */
+		.main-content {
+			flex: 1;
+			margin-left: var(--sidebar-width);
+			margin-top: var(--topbar-height);
+			padding: 30px;
+			transition: all 0.3s ease;
+			min-height: calc(100vh - var(--topbar-height));
+			background-color: #f8fafc;
+		}
+
+		.main-content.expanded {
+			margin-left: 0;
+		}
+
+		.page-header {
+			margin-bottom: 30px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 15px;
+		}
+
+		.page-title h2 {
+			font-size: 28px;
+			color: var(--primary);
+			margin-bottom: 5px;
+			background: linear-gradient(135deg, var(--primary), var(--secondary));
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+
+		.page-subtitle {
+			color: #7f8c8d;
+			font-size: 16px;
+		}
+
+		.breadcrumb {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			color: #7f8c8d;
+			background: white;
+			padding: 8px 15px;
+			border-radius: var(--border-radius);
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.breadcrumb a {
+			color: var(--secondary);
+			text-decoration: none;
+			font-weight: 500;
+		}
+
+		/* Registration Form Section */
+		.registration-section {
+			background-color: white;
+			border-radius: var(--border-radius);
+			box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+			padding: 30px;
+			margin-bottom: 30px;
+			border: 1px solid rgba(0, 0, 0, 0.05);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.registration-section::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 4px;
+			background: linear-gradient(90deg, var(--secondary), var(--accent));
+		}
+
+		.section-header {
+			margin-bottom: 25px;
+			padding-bottom: 15px;
+			border-bottom: 2px solid #f1f1f1;
+		}
+
+		.section-title {
+			font-size: 22px;
+			color: var(--primary);
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.section-title i {
+			color: var(--secondary);
+		}
+
+		.form-container {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 40px;
+		}
+
+		@media (max-width: 1100px) {
+			.form-container {
+				grid-template-columns: 1fr;
+				gap: 30px;
+			}
+		}
+
+		.form-section,
+		.map-section {
+			padding: 20px 0;
+		}
+
+		.form-group {
+			margin-bottom: 22px;
+			position: relative;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 10px;
+			font-weight: 600;
+			color: #444;
+			font-size: 15px;
+		}
+
+		.required::after {
+			content: " *";
+			color: var(--danger);
+		}
+
+		input,
+		select,
+		textarea {
+			width: 100%;
+			padding: 14px 16px;
+			border: 1px solid #ddd;
+			border-radius: 6px;
+			font-size: 16px;
+			transition: all 0.3s;
+			background-color: #fcfcfc;
+		}
+
+		input:focus,
+		select:focus,
+		textarea:focus {
+			border-color: var(--secondary);
+			outline: none;
+			box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+			background-color: white;
+			transform: translateY(-1px);
+		}
+
+		select[multiple] {
+			height: 120px;
+		}
+
+		.form-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 20px;
+		}
+
+		@media (max-width: 768px) {
+			.form-row {
+				grid-template-columns: 1fr;
+				gap: 15px;
+			}
+		}
+
+		#map-container {
+			border-radius: var(--border-radius);
+			overflow: hidden;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+			height: 420px;
+			margin-bottom: 20px;
+			border: 1px solid #e0e0e0;
+			position: relative;
+		}
+
+		#map {
+			height: 100%;
+			width: 100%;
+		}
+
+		.map-instructions {
+			background-color: #f0f7ff;
+			padding: 18px;
+			border-radius: 6px;
+			margin-top: 15px;
+			border-left: 4px solid var(--secondary);
+			font-size: 14px;
+			color: #2c3e50;
+		}
+
+		.map-instructions i {
+			color: var(--secondary);
+			margin-right: 8px;
+		}
+
+		.coordinates-display {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 15px;
+			margin-top: 15px;
+		}
+
+		.coordinate-box {
+			background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+			padding: 18px;
+			border-radius: 6px;
+			text-align: center;
+			border: 1px solid #e0e0e0;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+			transition: all 0.3s;
+		}
+
+		.coordinate-box:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		.coordinate-label {
+			font-size: 13px;
+			color: #7f8c8d;
+			margin-bottom: 8px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+		.coordinate-value {
+			font-size: 20px;
+			font-weight: 700;
+			color: var(--primary);
+			font-family: 'Courier New', monospace;
+			background: white;
+			padding: 8px;
+			border-radius: 4px;
+			border: 1px solid #eee;
+		}
+
+		.button-group {
+			display: flex;
+			gap: 15px;
+			margin-top: 40px;
+			padding-top: 25px;
+			border-top: 1px solid #eee;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			padding: 16px 32px;
+			border: none;
+			border-radius: 6px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			min-width: 180px;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.btn-submit {
+			background: linear-gradient(135deg, var(--accent), #27ae60);
+			color: white;
+			flex: 2;
+		}
+
+		.btn-submit:hover {
+			background: linear-gradient(135deg, #27ae60, #219653);
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
+		}
+
+		.btn-reset {
+			background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+			color: #333;
+			flex: 1;
+		}
+
+		.btn-reset:hover {
+			background: linear-gradient(135deg, #d5dbdb, #a6acaf);
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+		}
+
+		.btn-back {
+			background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+			color: #333;
+			border: 1px solid #ddd;
+			text-decoration: none;
+			width: auto;
+			padding: 12px 24px;
+			flex: 1;
+		}
+
+		.btn-back:hover {
+			background: linear-gradient(135deg, #e9ecef, #dee2e6);
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+		}
+
+		.form-notice {
+			background: linear-gradient(135deg, #fff8e1, #ffecb3);
+			padding: 18px;
+			border-radius: 6px;
+			margin-top: 30px;
+			border-left: 4px solid var(--warning);
+			font-size: 14px;
+			color: #5d4037;
+		}
+
+		.form-notice i {
+			color: var(--warning);
+			margin-right: 8px;
+		}
+
+		.success-message {
+			display: none;
+			background: linear-gradient(135deg, #d4edda, #c3e6cb);
+			color: #155724;
+			padding: 25px;
+			border-radius: 6px;
+			margin-top: 25px;
+			text-align: center;
+			border: 1px solid #c3e6cb;
+			box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+			animation: fadeIn 0.5s ease;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.field-error {
+			color: var(--danger);
+			font-size: 13px;
+			margin-top: 6px;
+			display: none;
+			font-weight: 500;
+		}
+
+		.error {
+			border-color: var(--danger) !important;
+			box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2) !important;
+		}
+
+		/* Footer */
+		.footer {
+			text-align: center;
+			padding: 20px;
+			color: #7f8c8d;
+			font-size: 14px;
+			border-top: 1px solid #eee;
+			margin-top: 30px;
+			background: white;
+			border-radius: var(--border-radius);
+			box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+		}
+
+		/* Responsive adjustments */
+		@media (max-width: 768px) {
+			.sidebar {
+				transform: translateX(-100%);
+				z-index: 1000;
+			}
+
+			.sidebar.active {
+				transform: translateX(0);
+			}
+
+			.main-content {
+				margin-left: 0;
+				padding: 20px;
+			}
+
+			.toggle-sidebar {
+				display: block;
+			}
+
+			.page-header {
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 15px;
+			}
+
+			.coordinates-display {
+				grid-template-columns: 1fr;
+			}
+
+			.button-group {
+				flex-direction: column;
+			}
+
+			.btn {
+				width: 100%;
+				min-width: auto;
+			}
+
+			.user-details {
+				display: none;
+			}
+		}
+
+		/* Overlay for mobile sidebar */
+		.sidebar-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background-color: rgba(0, 0, 0, 0.5);
+			z-index: 999;
+			display: none;
+			backdrop-filter: blur(3px);
+		}
+
+		.sidebar-overlay.active {
+			display: block;
+		}
+
+		/* Form Stepper (Optional) */
+		.form-stepper {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 40px;
+			position: relative;
+		}
+
+		.form-stepper::before {
+			content: '';
+			position: absolute;
+			top: 15px;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background-color: #e0e0e0;
+			z-index: 1;
+		}
+
+		.stepper-step {
+			position: relative;
+			z-index: 2;
+			text-align: center;
+			flex: 1;
+		}
+
+		.stepper-circle {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			background-color: #e0e0e0;
+			color: #666;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 0 auto 10px;
+			font-weight: bold;
+			border: 3px solid white;
+		}
+
+		.stepper-step.active .stepper-circle {
+			background-color: var(--secondary);
+			color: white;
+		}
+
+		.stepper-label {
+			font-size: 13px;
+			color: #666;
+			font-weight: 500;
+		}
+
+		.stepper-step.active .stepper-label {
+			color: var(--secondary);
+			font-weight: 600;
+		}
+
+		/* Form Tips */
+		.form-tip {
+			background-color: #e8f4fc;
+			padding: 12px 15px;
+			border-radius: 5px;
+			margin-top: 5px;
+			font-size: 13px;
+			color: #2c3e50;
+			border-left: 3px solid var(--secondary);
+		}
+
+		.form-tip i {
+			color: var(--secondary);
+			margin-right: 5px;
+		}
+	</style>
+	<!-- Font Awesome for icons -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+	<!-- Sidebar Overlay for Mobile -->
+	<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+	<!-- Dashboard Container -->
+	<div class="dashboard-container">
+		<!-- Sidebar -->
+		<aside class="sidebar" id="sidebar">
+			<div class="sidebar-header">
+				<h3>Fuel Express Admin</h3>
+			</div>
+
+			<ul class="sidebar-menu">
+				<li>
+					<a href="/adashboard">
+						<i class="fas fa-tachometer-alt"></i>
+						<span>Dashboard</span>
+					</a>
+				</li>
+				<li>
+					<a href="#" class="active">
+						<i class="fas fa-gas-pump"></i>
+						<span>Register Pump</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<i class="fas fa-map-marker-alt"></i>
+						<span>My Pumps</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<i class="fas fa-chart-line"></i>
+						<span>Analytics</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<i class="fas fa-file-invoice-dollar"></i>
+						<span>Transactions</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<i class="fas fa-cog"></i>
+						<span>Settings</span>
+					</a>
+				</li>
+				<li>
+					<a href="/logout">
+						<i class="fas fa-sign-out-alt"></i>
+						<span>Logout</span>
+					</a>
+				</li>
+
+			</ul>
+
+			<div class="sidebar-footer">
+				<p>Fuel Express &copy; 2026</p>
+				<p>v2.1.0</p>
+			</div>
+		</aside>
+
+		<!-- Main Content -->
+		<main class="main-content" id="mainContent">
+			<!-- Topbar -->
+			<div class="topbar">
+				<button class="toggle-sidebar" id="toggleSidebar">
+					<i class="fas fa-bars"></i>
+				</button>
+
+				<div class="logo">
+					<div class="logo-icon">
+						<i class="fas fa-gas-pump"></i>
+					</div>
+					<div>
+						<h1>Fuel Express</h1>
+						<div style="font-size: 12px; color: #7f8c8d; margin-top: -3px;">Petrol Pump Registration</div>
+					</div>
+				</div>
+
+				<div class="user-info">
+					<div class="notifications" id="notifications">
+						<i class="fas fa-bell"></i>
+						<span class="notification-count">2</span>
+					</div>
+					<div class="user-avatar" id="userMenu">
+						<i class="fa-solid fa-user"></i>
+					</div>
+					<div class="user-details">
+						<div class="user-name" th:text="${LoginUserBean.loginname}"></div>
+					</div>
+
+				</div>
+			</div>
+
+			<!-- Page Header -->
+			<div class="page-header">
+				<div class="page-title">
+					<h2>Register New Petrol Pump</h2>
+					<div class="page-subtitle">Fill in the details below to register your petrol pump with Fuel Express
+					</div>
+				</div>
+
+				<div class="breadcrumb">
+					<a href="#">Dashboard</a>
+					<i class="fas fa-chevron-right"></i>
+					<span>Pump Registration</span>
+				</div>
+			</div>
+
+			<!-- Form Stepper -->
+			<div class="form-stepper">
+				<div class="stepper-step active">
+					<div class="stepper-circle">1</div>
+					<div class="stepper-label">Basic Details</div>
+				</div>
+				<div class="stepper-step">
+					<div class="stepper-circle">2</div>
+					<div class="stepper-label">Location</div>
+				</div>
+				<div class="stepper-step">
+					<div class="stepper-circle">3</div>
+					<div class="stepper-label">Confirmation</div>
+				</div>
+			</div>
+
+			<!-- Registration Form Section -->
+			<div class="registration-section">
+				<div class="section-header">
+					<h3 class="section-title">
+						<i class="fas fa-edit"></i> Petrol Pump Registration Form
+					</h3>
+				</div>
+
+				<div class="form-container">
+					<!-- Left side: Registration Form -->
+					<div class="form-section">
+						<form id="registrationForm" th:action="@{/savepetrolpump}" th:object="${petrolPump}"
+							method="post">
+							<input type="hidden" id="latitude" th:field="*{latitude}">
+							<input type="hidden" id="longitude" th:field="*{longitude}">
+							<div class="form-group">
+								<label for="pumpName" class="required">Petrol Pump Name</label>
+								<input type="text" id="pumpName" th:field="*{name}"
+									placeholder="e.g., Green Fuel Station" required>
+								<div class="form-tip"><i class="fas fa-lightbulb"></i> Enter the official name of your
+									petrol pump</div>
+								<div class="field-error" id="pumpNameError">Please enter a valid pump name</div>
+							</div>
+
+							<div class="form-row">
+								<div class="form-group">
+									<label for="ownerName" class="required">Owner Name</label>
+									<input type="text" id="ownerName" th:field="*{ownerName}"
+										placeholder="Enter owner's full name" required>
+									<div class="field-error" id="ownerNameError">Please enter owner name</div>
+								</div>
+
+								<div class="form-group">
+									<label for="contactNumber" class="required">Contact Number</label>
+									<input type="tel" id="contactNumber" th:field="*{contactNumber}"
+										placeholder="10-digit mobile number" required>
+									<div class="form-tip"><i class="fas fa-lightbulb"></i> This will be used for
+										verification</div>
+									<div class="field-error" id="contactNumberError">Please enter a valid 10-digit phone
+										number</div>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label for="email" class="required">Email Address</label>
+								<input type="email" id="email" th:field="*{email}" placeholder="example@domain.com"
+									required>
+								<div class="field-error" id="emailError">Please enter a valid email address</div>
+							</div>
+
+							<div class="form-group">
+								<label for="address" class="required">Full Address</label>
+								<textarea id="address" th:field="*{address}" rows="3"
+									placeholder="Enter complete address including street, landmark, etc."
+									required></textarea>
+								<div class="field-error" id="addressError">Please enter a valid address (minimum 10
+									characters)</div>
+							</div>
+
+							<div class="form-row">
+								<div class="form-group">
+									<label for="city" class="required">City</label>
+									<input type="text" id="city" th:field="*{city}" placeholder="Enter city" required>
+									<div class="field-error" id="cityError">Please enter city name</div>
+								</div>
+
+								<div class="form-group">
+									<label for="state" class="required">State</label>
+									<select id="state" th:field="*{state}" required>
+										<option value="">Select State</option>
+										<option value="Maharashtra">Odisha</option>
+										<option value="Delhi">Delhi</option>
+										<option value="Karnataka">Karnataka</option>
+									</select>
+									<div class="field-error" id="stateError">Please select a state</div>
+								</div>
+							</div>
+
+							<div class="form-row">
+								<div class="form-group">
+									<label for="pincode" class="required">Pincode</label>
+									<input type="text" id="pincode" th:field="*{pincode}" placeholder="6-digit pincode"
+										required>
+									<div class="field-error" id="pincodeError">Please enter a valid 6-digit pincode
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="fuelTypes" class="required">Fuel Types Available</label>
+									<select id="fuelTypes" th:field="*{fuelTypes}" multiple required>
+										<option value="Petrol">Petrol</option>
+										<option value="Diesel">Diesel</option>
+										<option value="CNG">CNG</option>
+										<option value="Electric Charging">Electric Charging</option>
+										<option value="Premium Petrol">Premium Petrol</option>
+										<option value="Premium Diesel">Premium Diesel</option>
+									</select>
+									<div class="form-tip"><i class="fas fa-lightbulb"></i> Hold Ctrl/Cmd to select
+										multiple options</div>
+									<div class="field-error" id="fuelTypesError">Please select at least one fuel type
+									</div>
+								</div>
+							</div>
+
+							<!-- Hidden fields for coordinates -->
+							<input type="hidden" id="latitude" th:field="*{latitude}" value="19.0760">
+							<input type="hidden" id="longitude" th:field="*{longitude}" value="72.8777">
+
+							<div class="form-notice">
+								<i class="fas fa-info-circle"></i>
+								<strong>Important:</strong> Please click on the map to select your petrol pump location.
+								The coordinates will be automatically captured.
+								Accurate location helps customers find your pump easily.
+							</div>
+
+							<div class="button-group">
+								<button type="submit" class="btn btn-submit">
+									<i class="fas fa-paper-plane"></i> Register Petrol Pump
+								</button>
+								<button type="reset" class="btn btn-reset" id="resetBtn">
+									<i class="fas fa-redo"></i> Reset Form
+								</button>
+								<a href="#" class="btn btn-back">
+									<i class="fas fa-arrow-left"></i> Back to Dashboard
+								</a>
+							</div>
+						</form>
+					</div>
+
+					<!-- Right side: Map -->
+					<div class="map-section">
+						<div class="section-header">
+							<h3 class="section-title">
+								<i class="fas fa-map-marked-alt"></i> Select Pump Location
+							</h3>
+						</div>
+
+						<div id="map-container">
+							<div id="map"></div>
+							<div
+								style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; padding: 8px 12px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 14px;">
+								<i class="fas fa-crosshairs"></i> Click on map to set location
+							</div>
+						</div>
+
+						<div class="map-instructions">
+							<p><strong><i class="fas fa-info-circle"></i> Instructions:</strong>
+								Click anywhere on the map to mark your petrol pump location. You can drag the marker to
+								adjust the position.
+								The coordinates will be automatically saved to the form.</p>
+						</div>
+
+						<div class="coordinates-display">
+							<div class="coordinate-box">
+								<div class="coordinate-label">Latitude</div>
+								<div class="coordinate-value" id="latDisplay">19.0760</div>
+							</div>
+							<div class="coordinate-box">
+								<div class="coordinate-label">Longitude</div>
+								<div class="coordinate-value" id="lngDisplay">72.8777</div>
+							</div>
+						</div>
+
+						<div
+							style="margin-top: 20px; background-color: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 4px solid #9b59b6;">
+							<h4 style="margin-bottom: 8px; color: #2c3e50; font-size: 16px;"><i class="fas fa-tips"></i>
+								Location Tips:</h4>
+							<ul style="font-size: 14px; color: #555; padding-left: 20px; margin: 0;">
+								<li>Place the marker at the entrance of your petrol pump</li>
+								<li>Ensure the location is visible from the main road</li>
+								<li>Verify the coordinates match your actual address</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Footer -->
+			<div class="footer">
+				<p>Fuel Express &copy; 2023. All rights reserved. | Contact: support@fulexpress.com | Phone:
+					1800-123-4567</p>
+				<p style="margin-top: 5px;">All information provided will be kept confidential and used only for
+					verification purposes.</p>
+			</div>
+		</main>
+	</div>
+
+	<!-- Leaflet JS for maps -->
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<!-- *** CHANGE 2: Load Leaflet.GoogleMutant Plugin *** -->
+	<script src="https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js"></script>
+
+	<script>
+		// Initialize the map with default coordinates (Mumbai, India)
+		const defaultLat = 19.0760;
+		const defaultLng = 72.8777;
+
+		let map = L.map('map').setView([defaultLat, defaultLng], 13);
+		let marker = null;
+
+		// *** CHANGE 3: Replace OpenStreetMap with Google Maps ***
+		// Add Google Maps tile layer using the GoogleMutant plugin
+		L.gridLayer.googleMutant({
+			type: 'roadmap' // Can be 'roadmap', 'satellite', 'terrain', or 'hybrid'
+		}).addTo(map);
+
+		// Add scale control
+		L.control.scale().addTo(map);
+
+		// Add initial marker
+		marker = L.marker([defaultLat, defaultLng], {
+			draggable: true,
+			title: 'Drag me to adjust position'
+		}).addTo(map);
+
+		// Update form fields when marker is dragged or map is clicked
+		function updateCoordinates(lat, lng) {
+			document.getElementById('latitude').value = lat;
+			document.getElementById('longitude').value = lng;
+			document.getElementById('latDisplay').textContent = lat.toFixed(6);
+			document.getElementById('lngDisplay').textContent = lng.toFixed(6);
+
+			// Update stepper to step 2
+			updateStepper(2);
+		}
+
+		// Handle map click to add/move marker
+		map.on('click', function (e) {
+			const {lat, lng} = e.latlng;
+
+			if (marker) {
+				marker.setLatLng([lat, lng]);
+			} else {
+				marker = L.marker([lat, lng], {
+					draggable: true,
+					title: 'Drag me to adjust position'
+				}).addTo(map);
+			}
+
+			updateCoordinates(lat, lng);
+			map.setView([lat, lng], 15); // Zoom in a bit
+
+			// Show a small popup
+			marker.bindPopup("Petrol Pump Location<br>Lat: " + lat.toFixed(6) + "<br>Lng: " + lng.toFixed(6)).openPopup();
+		});
+
+		// Handle marker drag end
+		marker.on('dragend', function (e) {
+			const {lat, lng} = e.target.getLatLng();
+			updateCoordinates(lat, lng);
+		});
+
+
+
+		// Reset button functionality
+		document.getElementById('resetBtn').addEventListener('click', function () {
+			// Reset map to default location
+			marker.setLatLng([defaultLat, defaultLng]);
+			map.setView([defaultLat, defaultLng], 13);
+			updateCoordinates(defaultLat, defaultLng);
+
+			// Hide any error messages
+			document.querySelectorAll('.field-error').forEach(error => {
+				error.style.display = 'none';
+			});
+
+			document.querySelectorAll('.error').forEach(field => {
+				field.classList.remove('error');
+			});
+
+			// Hide success message if visible
+			document.getElementById('successMessage').style.display = 'none';
+
+			// Reset stepper
+			updateStepper(1);
+		});
+
+		// Auto-populate city based on coordinates (simulated for demo)
+		map.on('click', function (e) {
+			// In a real application, you would use reverse geocoding here
+			// For demo, we'll just simulate with some example cities
+			const cities = ['Odisha', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
+			const randomCity = cities[Math.floor(Math.random() * cities.length)];
+
+			// Only populate if city field is empty
+			if (!document.getElementById('city').value) {
+				document.getElementById('city').value = randomCity;
+			}
+		});
+
+		// Sidebar toggle functionality - Fixed
+		const toggleSidebar = document.getElementById('toggleSidebar');
+		const sidebar = document.getElementById('sidebar');
+		const mainContent = document.getElementById('mainContent');
+		const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+		toggleSidebar.addEventListener('click', function (e) {
+			e.stopPropagation();
+			sidebar.classList.toggle('active');
+			sidebarOverlay.classList.toggle('active');
+			mainContent.classList.toggle('expanded');
+		});
+
+		sidebarOverlay.addEventListener('click', function () {
+			sidebar.classList.remove('active');
+			sidebarOverlay.classList.remove('active');
+			mainContent.classList.remove('expanded');
+		});
+
+		// Close sidebar when clicking outside on mobile
+		document.addEventListener('click', function (e) {
+			if (window.innerWidth <= 768) {
+				if (!sidebar.contains(e.target) && !toggleSidebar.contains(e.target)) {
+					sidebar.classList.remove('active');
+					sidebarOverlay.classList.remove('active');
+					mainContent.classList.remove('expanded');
+				}
+			}
+		});
+
+		// Handle window resize
+		window.addEventListener('resize', function () {
+			if (window.innerWidth > 768) {
+				sidebar.classList.remove('active');
+				sidebarOverlay.classList.remove('active');
+				mainContent.classList.remove('expanded');
+			}
+		});
+
+		// Notifications click
+		document.getElementById('notifications').addEventListener('click', function () {
+			const notifications = [
+				{type: 'info', message: 'New pump registration request received', time: '10 mins ago'},
+				{type: 'success', message: 'Payment verification completed for Green Fuel', time: '2 hours ago'}
+			];
+
+			alert('You have 2 notifications:\n\n' +
+				notifications.map(n => `• ${n.message} (${n.time})`).join('\n'));
+		});
+
+		// User menu click
+		document.getElementById('userMenu').addEventListener('click', function () {
+			const options = ['Profile Settings', 'Account Details', 'Change Password', 'Logout'];
+			const choice = prompt('User Options:\n' + options.map((opt, i) => `${i + 1}. ${opt}`).join('\n'));
+
+			if (choice === '4') {
+				if (confirm('Are you sure you want to logout?')) {
+					alert('Logging out...');
+					// In real app, redirect to logout page
+				}
+			}
+		});
+
+		// Update stepper function
+		function updateStepper(step) {
+			document.querySelectorAll('.stepper-step').forEach((stepper, index) => {
+				if (index < step) {
+					stepper.classList.add('active');
+				} else {
+					stepper.classList.remove('active');
+				}
+			});
+		}
+
+		// Show notification function
+		function showNotification(message, type) {
+			const notification = document.createElement('div');
+			notification.style.cssText = `
+                position: fixed;
+                top: 90px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ecc71' : '#e74c3c'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+            `;
+			notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+
+			document.body.appendChild(notification);
+
+			setTimeout(() => {
+				notification.style.animation = 'slideOut 0.3s ease';
+				setTimeout(() => {
+					document.body.removeChild(notification);
+				}, 300);
+			}, 3000);
+		}
+
+		// Add CSS for notifications
+		const style = document.createElement('style');
+		style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+		document.head.appendChild(style);
+
+		// Print registration details
+		function printRegistration() {
+			const printContent = `
+                <html>
+                <head>
+                    <title>Fuel Express Registration</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #2c3e50; }
+                        .details { margin: 20px 0; }
+                        .details div { margin: 10px 0; }
+                        .label { font-weight: bold; color: #555; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Fuel Express - Pump Registration</h1>
+                    <div class="details">
+                        <div><span class="label">Pump Name:</span> ${document.getElementById('pumpName').value}</div>
+                        <div><span class="label">Owner:</span> ${document.getElementById('ownerName').value}</div>
+                        <div><span class="label">Location:</span> ${document.getElementById('address').value}, ${document.getElementById('city').value}</div>
+                        <div><span class="label">Coordinates:</span> ${document.getElementById('latDisplay').textContent}, ${document.getElementById('lngDisplay').textContent}</div>
+                        <div><span class="label">Registration ID:</span> FE2023-5678</div>
+                        <div><span class="label">Date:</span> ${new Date().toLocaleDateString()}</div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+			const printWindow = window.open('', '_blank');
+			printWindow.document.write(printContent);
+			printWindow.document.close();
+			printWindow.print();
+		}
+
+		// Initialize stepper
+		updateStepper(1);
+
+		// Add hover effect to form inputs
+		document.querySelectorAll('input, select, textarea').forEach(input => {
+			input.addEventListener('focus', function () {
+				this.parentElement.style.transform = 'translateY(-2px)';
+			});
+
+			input.addEventListener('blur', function () {
+				this.parentElement.style.transform = 'translateY(0)';
+			});
+		});
+	</script>
+</body>
+
+</html>
